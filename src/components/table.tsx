@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Table, Modal, Form, Input, Button} from 'antd';
+import { useSelector, useDispatch } from 'react-redux'
+import { addData } from "../redux/dataSlice";
 
 const { Column } = Table;
 
@@ -27,7 +29,9 @@ type FieldType = {
 };
 
 const MyTable = ()=>{
-    const [data, setData] = useState<any>([]);
+    // const [data, setData] = useState<any>([]);
+    const dispatch = useDispatch();
+    const data = useSelector ((state: any) => state.database.data)
     const [inputDetails, setInputDetails] = useState<any>();
     const [selectedUser, setSelectedUser] = useState<any>();
     const [isModalShown, setIsModalShown] = useState(false);
@@ -46,28 +50,25 @@ const MyTable = ()=>{
       };
 
       const handleOnFinish = (values: DataType) =>{
-        // const sendData = ()=>{
-        //     // fetch('https://dummyjson.com/users',{method: "POST", body: inputDetails})
-        // }
-        setInputDetails(values)
-        setData([...data, inputDetails]);
+        dispatch(addData(values))
+        console.log(values)
       }
 
       useEffect(()=>{
         const getData = async ()=>{
-            const response = await fetch('https://dummyjson.com/users');
-            const dummyData = await response.json();
-            setData(dummyData.users);
-            // data.map((user: DataType)=>{
-            //     setData(user);
-            // })
+          const response = await fetch('https://dummyjson.com/users');
+          const dummyData: any = await response.json();
+          let fetchedData = dummyData.users
+          fetchedData.map((user: DataType)=>{
+            dispatch(addData(user));
+          })
         }
         getData();
-      },[])
+      },[dispatch])
 
     return (
     <>
-            <Table<DataType> dataSource={data}>
+            <Table<DataType> dataSource={data} rowKey="id">
             <Column title="First Name" dataIndex="firstName" key="firstName" />
             <Column title="Last Name" dataIndex="lastName" key="lastName" />
             <Column title="Age" dataIndex="age" key="age" />
